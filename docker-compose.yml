@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: issue_triage
+      POSTGRES_USER: triage
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - triage-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U triage -d issue_triage"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [internal]
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_MODE: oidc
+      DATABASE_URL: postgresql+psycopg://triage:${DB_PASSWORD}@db:5432/issue_triage
+      CHECKPOINT_BACKEND: postgres
+      CHECKPOINT_DATABASE_URL: postgresql://triage:${DB_PASSWORD}@db:5432/issue_triage
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml:ro
+    networks: [internal]
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  triage-postgres:

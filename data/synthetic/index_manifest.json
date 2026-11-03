@@ -1,0 +1,19 @@
+{
+  "index": "issue-triage-v1",
+  "metric": "cosine",
+  "embedding_model": "text-embedding-3-small",
+  "embedding_dimensions": 1536,
+  "namespaces": {
+    "past_issues": 60,
+    "controls": 36,
+    "policies": 10
+  },
+  "source_formats": {
+    "past_issues": "csv",
+    "controls": "docx",
+    "policies": "pdf"
+  },
+  "retrieval": "pinecone semantic + local BM25 keyword, fused with reciprocal rank fusion",
+  "source_scope": "synthetic-only",
+  "generated_at_utc": "2026-10-29T12:28:36Z"
+}
